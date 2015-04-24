@@ -1,0 +1,161 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.GamerServices;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
+using ExplodingTeddies;
+
+
+namespace Lab11
+{
+    /// <summary>
+    /// This is the main type for your game
+    /// </summary>
+    public class Game1 : Microsoft.Xna.Framework.Game
+    {
+        // window size and variable declaration
+        
+        public const int WINDOW_WIDTH = 800;
+        public const int WINDOW_HEIGHT = 600;
+        GraphicsDeviceManager graphics;
+        SpriteBatch spriteBatch;
+        TeddyBear teddy;       
+        Explosion boom;
+        Random rand = new Random();
+        String currentTeddy;
+        ButtonState prevButtonState = ButtonState.Released;
+
+        public Game1()
+        {
+            graphics = new GraphicsDeviceManager(this);
+            Content.RootDirectory = "Content";
+            graphics.PreferredBackBufferWidth = WINDOW_WIDTH;
+            graphics.PreferredBackBufferHeight = WINDOW_HEIGHT;
+            IsMouseVisible = true;
+             
+
+        }
+
+        /// <summary>
+        /// Allows the game to perform any initialization it needs to before starting to run.
+        /// This is where it can query for any required services and load any non-graphic
+        /// related content.  Calling base.Initialize will enumerate through any components
+        /// and initialize them as well.
+        /// </summary>
+        protected override void Initialize()
+        {
+            // TODO: Add your initialization logic here
+
+            base.Initialize();
+        }
+
+        /// <summary>
+        /// LoadContent will be called once per game and is the place to load
+        /// all of your content.
+        /// </summary>
+        protected override void LoadContent()
+        {
+            // Create a new SpriteBatch, which can be used to draw textures.
+            spriteBatch = new SpriteBatch(GraphicsDevice);
+           
+            // generate random location
+            int randXLoc = rand.Next(0, 801);
+            int randYLoc = rand.Next(0, 601);
+            
+            // generate random velocity
+            float speed = rand.Next(1, 6);
+            float angle = ((float)Math.PI * 2) * (float)rand.NextDouble();
+            Vector2 velocity = new Vector2((speed * (float)Math.Cos(angle)), (speed * (float)Math.Sin(angle)));
+            
+            // New teddy and boom objects
+            if (rand.Next(2) == 0)
+            {
+                currentTeddy = "teddybear0";
+            }
+            else
+            {
+                currentTeddy = "teddybear1";
+            }
+            
+          
+            teddy = new TeddyBear(Content, WINDOW_WIDTH, WINDOW_HEIGHT, currentTeddy, randXLoc, randYLoc, velocity);
+            boom = new Explosion(Content);            
+
+
+//            In the Game1 LoadContent method, replace the comment that says
+//TODO: use this.Content to load your game content here
+//with a comment and the code to create a new teddy bear object using the TeddyBear
+//constructor that gives the teddy bears a specific velocity. You should generate random x
+//and y components of the velocity using the random variable you declared above. After
+//you have those random components, you can create a new Vector2 object to pass in as
+//the last argument to the TeddyBear constructor.
+
+
+
+        }
+
+        /// <summary>
+        /// UnloadContent will be called once per game and is the place to unload
+        /// all content.
+        /// </summary>
+        protected override void UnloadContent()
+        {
+            // TODO: Unload any non ContentManager content here
+        }
+
+        /// <summary>
+        /// Allows the game to run logic such as updating the world,
+        /// checking for collisions, gathering input, and playing audio.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        protected override void Update(GameTime gameTime)
+        {
+            // Allows the game to exit
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+                this.Exit();
+
+            // TODO: Add your update logic here
+            teddy.Update();
+            boom.Update(gameTime);
+            MouseState mouse = Mouse.GetState();            
+
+            //click teddy = boom
+            if (mouse.LeftButton == ButtonState.Released && prevButtonState == ButtonState.Pressed)
+            {
+                if (mouse.X >= teddy.DrawRectangle.Left && mouse.X <= teddy.DrawRectangle.Right) 
+                {
+                    if (mouse.Y >= teddy.DrawRectangle.Top && mouse.Y <= teddy.DrawRectangle.Bottom) 
+                    {
+                        teddy.Active = false;
+                        boom.Play(teddy.DrawRectangle.Center.X, teddy.DrawRectangle.Center.Y);                        
+                    }
+                }                              
+            }
+            prevButtonState = mouse.LeftButton;
+
+            base.Update(gameTime);
+        }
+
+        /// <summary>
+        /// This is called when the game should draw itself.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        protected override void Draw(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            // TODO: Add your drawing code here
+            spriteBatch.Begin();
+            teddy.Draw(spriteBatch);
+            boom.Draw(spriteBatch);
+            spriteBatch.End();
+
+            base.Draw(gameTime);
+        }
+    }
+}
